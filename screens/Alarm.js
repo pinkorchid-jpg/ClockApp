@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Platform, Alert } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import * as Notifications from 'expo-notifications';
 
 export default function Alarm() {
-    const [alarmTime, setAlarmTime] = useState('');
+    const [alarmHour, setAlarmHour] = useState('08');
+    const [alarmMinute, setAlarmMinute] = useState('00');
+    const [selectedDay, setSelectedDay] = useState('Everyday');
     const [notificationPermission, setNotificationPermission] = useState(false);
 
     useEffect(() => {
@@ -23,75 +25,98 @@ export default function Alarm() {
         }
     };
 
-const handleSetAlarm = async () => {
-    if (!alarmTime) {
-        Alert.alert('Error', 'Please enter a valid time for the alarm.');
-        return;
-    }
+    const handleSetAlarm = async () => {
+        if (notificationPermission) {
+            const trigger = new Date();
+            trigger.setHours(alarmHour);
+            trigger.setMinutes(alarmMinute);
+            trigger.setSeconds(0);
 
-    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    if (!timeRegex.test(alarmTime)) {
-        Alert.alert('Error', 'Invalid time format. Please use HH:MM format.');
-        return;
-    }
+            if (trigger < new Date()) {
+                trigger.setDate(trigger.getDate() + 1);
+            }
 
-    const now = new Date();
-    const currentTimeStamp = now.getTime();
+            await Notifications.scheduleNotificationAsync({
+                content: {
+                    title: "Alarm",
+                    body: "It's time!",
+                },
+                trigger: {
+                    hour: parseInt(alarmHour),
+                    minute: parseInt(alarmMinute),
+                    repeats: selectedDay === 'Everyday' || selectedDay === 'Weekdays' || selectedDay === 'Weekends',
+                },
+            });
 
-    const [hours, minutes] = alarmTime.split(':').map(Number);
-    const alarmTimestamp = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes).getTime();
-
-    if (alarmTimestamp <= currentTimeStamp) {
-        Alert.alert('Error', 'Please set the alarm time in the future.');
-        return;
-    }
-
-    const timeUntilAlarm = alarmTimestamp - currentTimeStamp;
-
-
-    if (!notificationPermission) {
-        Alert.alert('Error', 'Notification permissions are not granted. Please grant permission to set alarms.');
-        return;
-    }
-
-
-    try {
-        await scheduleNotification(timeUntilAlarm);
-        Alert.alert('Success', 'Alarm set successfully!');
-    } catch (error) {
-        Alert.alert('Error', 'Failed to set alarm. Please try again later.');
-    }
-};
-
-// hjvhgvhjhkj
-
-const scheduleNotification = async (timeUntilAlarm) => {
-    await Notifications.scheduleNotificationAsync({
-        content: {
-            title: 'Alarm',
-            body: 'Your alarm is ringing!',
-        },
-        trigger: {
-            seconds: timeUntilAlarm / 1000,
-        },
-    });
-};
-
+            Alert.alert(
+                "Alarm Set",
+                `Alarm set for ${alarmHour}:${alarmMinute} on ${selectedDay}`,
+                [{ text: "OK" }]
+            );
+        } else {
+            alert('Notification permissions are not granted.');
+        }
+    };
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Set Alarm</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="Enter time (HH:MM)"
-                keyboardType="numbers-and-punctuation"
-                value={alarmTime}
-                onChangeText={setAlarmTime}
-            />
-            <TouchableOpacity style={styles.button} onPress={handleSetAlarm}>
-                <FontAwesome name="bell" size={24} color="white" />
-                <Text style={styles.buttonText}>Set Alarm</Text>
-            </TouchableOpacity>
+            {/* Time Picker */}
+            <View style={styles.timePickerContainer}>
+                <View style={[styles.timePickerBox, styles.hourBox]}>
+                    <Text style={styles.pickerLabel}>Hour</Text>
+                    <Picker
+                        selectedValue={alarmHour}
+                        style={styles.picker}
+                        onValueChange={(itemValue) => setAlarmHour(itemValue)}
+                    >
+                        {Array.from({ length: 24 }, (_, i) => (
+                            <Picker.Item key={i} label={`${i < 10 ? '0' : ''}${i}`} value={`${i < 10 ? '0' : ''}${i}`} />
+                        ))}
+                    </Picker>
+                </View>
+                <View style={[styles.timePickerBox, styles.minuteBox]}>
+                    <Text style={styles.pickerLabel}>Minute</Text>
+                    <Picker
+                        selectedValue={alarmMinute}
+                        style={styles.picker}
+                        onValueChange={(itemValue) => setAlarmMinute(itemValue)}
+                    >
+                        {Array.from({ length: 60 }, (_, i) => (
+                            <Picker.Item key={i} label={`${i < 10 ? '0' : ''}${i}`} value={`${i < 10 ? '0' : ''}${i}`} />
+                        ))}
+                    </Picker>
+                </View>
+            </View>
+            {/* Day Picker */}
+            <View style={[styles.pickerContainer, styles.dayBox]}>
+                <Text style={styles.pickerLabel}>Day</Text>
+                <Picker
+                    selectedValue={selectedDay}
+                    style={styles.picker}
+                    onValueChange={(itemValue) => setSelectedDay(itemValue)}
+                >
+                    <Picker.Item label="Everyday" value="Everyday" />
+                    <Picker.Item label="Weekdays" value="Weekdays" />
+                    <Picker.Item label="Weekends" value="Weekends" />
+                    <Picker.Item label="Monday" value="Monday" />
+                    <Picker.Item label="Tuesday" value="Tuesday" />
+                    <Picker.Item label="Wednesday" value="Wednesday" />
+                    <Picker.Item label="Thursday" value="Thursday" />
+                    <Picker.Item label="Friday" value="Friday" />
+                    <Picker.Item label="Saturday" value="Saturday" />
+                    <Picker.Item label="Sunday" value="Sunday" />
+                </Picker>
+            </View>
+            {/* Action Buttons */}
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity style={[styles.button, styles.setButton]} onPress={handleSetAlarm}>
+                    <Text style={styles.buttonText}>Set Alarm</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.button, styles.cancelButton]}>
+                    <Text style={styles.buttonText}>Cancel</Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 }
@@ -99,6 +124,7 @@ const scheduleNotification = async (timeUntilAlarm) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#E1E0E5',
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
@@ -108,27 +134,63 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 20,
     },
-    input: {
-        width: '100%',
-        borderColor: 'gray',
-        borderWidth: 1,
-        paddingVertical: Platform.OS === 'ios' ? 12 : 8,
-        paddingHorizontal: 10,
+    timePickerContainer: {
+        flexDirection: 'row',
         marginBottom: 20,
-        borderRadius: 5,
+        width: '100%',
+        justifyContent: 'space-between',
+    },
+    timePickerBox: {
+        flex: 1,
+        alignItems: 'center',
+        padding: 10,
+        borderRadius: 10,
+    },
+    hourBox: {
+        backgroundColor: '#ADD8E6', // สีพื้นหลังของกล่องชั่วโมง
+    },
+    minuteBox: {
+        backgroundColor: '#90EE90', // สีพื้นหลังของกล่องนาที
+    },
+    pickerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+        width: '100%',
+    },
+    dayBox: {
+        backgroundColor: '#FFD700', // สีพื้นหลังของกล่องวัน
+        borderRadius: 10,
+        padding: 10,
+    },
+    pickerLabel: {
+        fontSize: 18,
+        color: '#333333',
+        marginBottom: 10,
+    },
+    picker: {
+        width: '100%',
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
     },
     button: {
-        flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'tomato',
         paddingVertical: 10,
         paddingHorizontal: 20,
         borderRadius: 5,
     },
+    setButton: {
+        backgroundColor: '#333333',
+    },
+    cancelButton: {
+        backgroundColor: '#FF5733',
+    },
     buttonText: {
         fontSize: 18,
         color: 'white',
-        marginLeft: 10,
     },
 });
