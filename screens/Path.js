@@ -4,6 +4,7 @@ import Navigate from "../navigation/Navigate";
 import MainClock from "./MainClock";
 import Stopwatch from "./Stopwatch";
 import Alarm from "./Alarm";
+import Timer from "./Timer";
 
 
 const Stack = createStackNavigator();
@@ -15,6 +16,7 @@ export default function Path() {
       <Stack.Screen name="MainClock" component={MainClock} options={{ title : "World Clock" }}  />
       <Stack.Screen name="Stopwatch" component={Stopwatch} options={{ title : "Stopwatch" }}  />
       <Stack.Screen name="Alarm" component={Alarm} options={{ title : "Alarm" }}  />
+      <Stack.Screen name="Timer" component={Timer} options={{ title : "Timer" }}  />
     </Stack.Navigator>
   );
 }

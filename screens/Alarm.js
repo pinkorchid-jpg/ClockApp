@@ -75,6 +75,7 @@ export default function Alarm() {
                         ))}
                     </Picker>
                 </View>
+                <View style={styles.spacer}></View>
                 <View style={[styles.timePickerBox, styles.minuteBox]}>
                     <Text style={styles.pickerLabel}>Minute</Text>
                     <Picker
@@ -145,31 +146,28 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 10,
         borderRadius: 10,
+        backgroundColor: '#333333',
     },
-    hourBox: {
-        backgroundColor: '#ADD8E6', // สีพื้นหลังของกล่องชั่วโมง
-    },
-    minuteBox: {
-        backgroundColor: '#90EE90', // สีพื้นหลังของกล่องนาที
+    spacer: {
+        width: 10,
     },
     pickerContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 20,
         width: '100%',
-    },
-    dayBox: {
-        backgroundColor: '#FFD700', // สีพื้นหลังของกล่องวัน
-        borderRadius: 10,
         padding: 10,
+        borderRadius: 10,
+        backgroundColor: '#333333',
     },
     pickerLabel: {
         fontSize: 18,
-        color: '#333333',
+        color: 'white',
         marginBottom: 10,
     },
     picker: {
         width: '100%',
+        color: 'white',
     },
     buttonContainer: {
         flexDirection: 'row',

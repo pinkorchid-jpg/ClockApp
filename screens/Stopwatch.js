@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#E1E0E5',
         justifyContent: 'center',
         alignItems: 'center',
+        borderRadius: 10,
     },
     timerContainer: {
         flex: 1,
@@ -89,6 +90,7 @@ const styles = StyleSheet.create({
         height: 100,
         justifyContent: 'center',
         alignItems: 'center',
+        borderRadius: 10
     },
     timerText: {
         fontSize: 70,
