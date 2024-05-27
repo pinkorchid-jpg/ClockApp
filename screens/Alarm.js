@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, FlatList } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as Notifications from 'expo-notifications';
 
@@ -7,7 +7,9 @@ export default function Alarm() {
     const [alarmHour, setAlarmHour] = useState('08');
     const [alarmMinute, setAlarmMinute] = useState('00');
     const [selectedDay, setSelectedDay] = useState('Everyday');
+    const [alarms, setAlarms] = useState([]);
     const [notificationPermission, setNotificationPermission] = useState(false);
+
 
     useEffect(() => {
         checkNotificationPermissions();
@@ -48,6 +50,14 @@ export default function Alarm() {
                 },
             });
 
+            const newAlarm = {
+                id: Date.now().toString(),
+                hour: alarmHour,
+                minute: alarmMinute,
+                day: selectedDay,
+            };
+            setAlarms([...alarms, newAlarm]);
+
             Alert.alert(
                 "Alarm Set",
                 `Alarm set for ${alarmHour}:${alarmMinute} on ${selectedDay}`,
@@ -57,6 +67,21 @@ export default function Alarm() {
             alert('Notification permissions are not granted.');
         }
     };
+
+    const renderItem = ({ item }) => (
+        <View style={styles.alarmItem}>
+            <Text style={styles.alarmText}>{`Alarm set for ${item.hour}:${item.minute} on ${item.day}`}</Text>
+            <TouchableOpacity onPress={() => handleDeleteAlarm(item.id)}>
+                <Text style={styles.deleteButton}>Delete</Text>
+            </TouchableOpacity>
+        </View>
+
+    );
+    const handleDeleteAlarm = (id) => {
+        const updatedAlarms = alarms.filter(item => item.id !== id);
+        setAlarms(updatedAlarms);
+    };
+    
 
     return (
         <View style={styles.container}>
@@ -118,6 +143,13 @@ export default function Alarm() {
                     <Text style={styles.buttonText}>Cancel</Text>
                 </TouchableOpacity>
             </View>
+            {/* Alarm List */}
+            <FlatList
+                data={alarms}
+                renderItem={renderItem}
+                keyExtractor={item => item.id}
+                style={styles.alarmList}
+            />
         </View>
     );
 }
@@ -133,6 +165,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: 'bold',
+        marginTop: 200,
         marginBottom: 20,
     },
     timePickerContainer: {
@@ -149,7 +182,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#333333',
     },
     spacer: {
-        width: 10,
+        width: 10, // ช่องว่างระหว่างกล่องเวลาและกล่องนาที
     },
     pickerContainer: {
         flexDirection: 'row',
@@ -167,12 +200,13 @@ const styles = StyleSheet.create({
     },
     picker: {
         width: '100%',
-        color: 'white',
+        color: 'white', // เปลี่ยนสีข้อความใน Picker ให้เป็นสีขาว
     },
     buttonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
+        marginBottom: 20,
     },
     button: {
         justifyContent: 'center',
@@ -190,5 +224,23 @@ const styles = StyleSheet.create({
     buttonText: {
         fontSize: 18,
         color: 'white',
+    },
+    alarmList: {
+        width: '100%',
+        marginTop: 20,
+    },
+    alarmItem: {
+        padding: 10,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+    },
+    alarmText: {
+        fontSize: 16,
+    },
+    deleteButton: {
+        color: '#FF5733',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });

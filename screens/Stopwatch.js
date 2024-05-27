@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 
 const Stopwatch = () => {
     const [timer, setTimer] = useState(0);
@@ -40,6 +40,12 @@ const Stopwatch = () => {
         setLaps([...laps, timer]);
     };
 
+    const renderItem = ({ item, index }) => (
+        <Text style={styles.lapText}>
+            Lap {index + 1}: {formatTime(item)}
+        </Text>
+    );
+
     return (
         <View style={styles.container}>
             <View style={styles.timerContainer}>
@@ -60,13 +66,13 @@ const Stopwatch = () => {
                 </TouchableOpacity>
             </View>
 
-            <View style={styles.lapContainer}>
-                {laps.map((lap, index) => (
-                    <Text key={index} style={styles.lapText}>
-                        Lap {index + 1}: {formatTime(lap)}
-                    </Text>
-                ))}
-            </View>
+            <FlatList
+                data={laps}
+                renderItem={renderItem}
+                keyExtractor={(item, index) => index.toString()}
+                style={styles.lapList}
+                contentContainerStyle={styles.lapContainer}
+            />
         </View>
     );
 };
@@ -77,12 +83,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#E1E0E5',
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 10,
+        padding: 20,
     },
     timerContainer: {
-        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        marginBottom: 20,
     },
     timerBox: {
         backgroundColor: '#333333',
@@ -90,7 +96,8 @@ const styles = StyleSheet.create({
         height: 100,
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 10
+        marginTop: 250,
+        borderRadius: 10,
     },
     timerText: {
         fontSize: 70,
@@ -98,9 +105,8 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         marginTop: 20,
-        width: '70%',
     },
     buttonBox: {
         justifyContent: 'center',
@@ -109,13 +115,17 @@ const styles = StyleSheet.create({
         width: 100,
         height: 50,
         borderRadius: 10,
+        marginHorizontal: 10,
     },
     buttonText: {
         fontSize: 20,
         color: '#E1E0E5',
     },
-    lapContainer: {
+    lapList: {
+        width: '100%',
         marginTop: 20,
+    },
+    lapContainer: {
         alignItems: 'center',
     },
     lapText: {
